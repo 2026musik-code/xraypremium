@@ -27,6 +27,10 @@ fi
 # Prepare Directories
 mkdir -p /etc/xray
 mkdir -p /var/log/xray
+touch /etc/xray/vmess_db.txt
+touch /etc/xray/vless_db.txt
+touch /etc/xray/trojan_db.txt
+touch /etc/xray/shadow_db.txt
 echo "$domain" > /etc/xray/domain
 echo -e "${GREEN}Domain saved to /etc/xray/domain${NC}"
 

@@ -48,6 +48,7 @@ function get_system_info() {
     # Resource Usage
     export RAM_USAGE=$(free -m | awk '/Mem:/ { print $3 }')
     export RAM_TOTAL=$(free -m | awk '/Mem:/ { print $2 }')
+    export CORES=$(nproc)
     # CPU Load simulation if top is not standard or restricted
     export CPU_LOAD=$(top -bn1 2>/dev/null | grep load | awk '{printf "%.2f%%", $(NF-2)}')
     if [[ -z "$CPU_LOAD" ]]; then CPU_LOAD="0.5%"; fi
@@ -74,10 +75,10 @@ function count_accounts() {
     # Count normal users (UID >= 1000)
     export SSH_COUNT=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd 2>/dev/null | wc -l)
     export OVPN_COUNT=0
-    export VMESS_COUNT=$(wc -l < /etc/xray/vmess_db.txt 2>/dev/null || echo 0)
-    export VLESS_COUNT=$(wc -l < /etc/xray/vless_db.txt 2>/dev/null || echo 0)
-    export TROJAN_COUNT=$(wc -l < /etc/xray/trojan_db.txt 2>/dev/null || echo 0)
-    export SHADOW_COUNT=$(wc -l < /etc/xray/shadow_db.txt 2>/dev/null || echo 0)
+    export VMESS_COUNT=$(cat /etc/xray/vmess_db.txt 2>/dev/null | wc -l)
+    export VLESS_COUNT=$(cat /etc/xray/vless_db.txt 2>/dev/null | wc -l)
+    export TROJAN_COUNT=$(cat /etc/xray/trojan_db.txt 2>/dev/null | wc -l)
+    export SHADOW_COUNT=$(cat /etc/xray/shadow_db.txt 2>/dev/null | wc -l)
 }
 
 # --- Visual Interface ---
@@ -96,7 +97,7 @@ function show_logo() {
 
 function show_header() {
     echo -e "${COL_BLUE}=======================================================${COL_NC}"
-    echo -e "   DATA VPS : ${COL_YELLOW}$MYIP${COL_NC} | ${COL_PURPLE}$DOMAIN${COL_NC}"
+    echo -e "   DATA VPS : ${COL_YELLOW}$MYIP${COL_NC} | ${COL_CYAN}$CORES Core${COL_NC} | ${COL_PURPLE}$DOMAIN${COL_NC}"
     echo -e "   TIME     : ${COL_WHITE}$TIME${COL_NC} | ${COL_WHITE}$DATE${COL_NC}"
     echo -e "${COL_BLUE}=======================================================${COL_NC}"
 }
