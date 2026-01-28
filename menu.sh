@@ -13,6 +13,12 @@ export COL_GRAY='\e[1;30m'
 export COL_BG_BLUE='\e[44m'
 export COL_BG_RED='\e[41m'
 
+# Check Dependencies
+if ! command -v jq &> /dev/null; then
+    echo "Error: jq is not installed. Please install jq."
+    exit 1
+fi
+
 # --- Helper Functions ---
 
 # Get System Info
@@ -63,14 +69,15 @@ function check_service() {
     fi
 }
 
-# Count Accounts (Placeholder logic)
+# Count Accounts
 function count_accounts() {
-    export SSH_COUNT=$(who | wc -l) # Active SSH sessions
+    # Count normal users (UID >= 1000)
+    export SSH_COUNT=$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd 2>/dev/null | wc -l)
     export OVPN_COUNT=0
-    export VMESS_COUNT=0
-    export VLESS_COUNT=0
-    export TROJAN_COUNT=0
-    export SHADOW_COUNT=0
+    export VMESS_COUNT=$(wc -l < /etc/xray/vmess_db.txt 2>/dev/null || echo 0)
+    export VLESS_COUNT=$(wc -l < /etc/xray/vless_db.txt 2>/dev/null || echo 0)
+    export TROJAN_COUNT=$(wc -l < /etc/xray/trojan_db.txt 2>/dev/null || echo 0)
+    export SHADOW_COUNT=$(wc -l < /etc/xray/shadow_db.txt 2>/dev/null || echo 0)
 }
 
 # --- Visual Interface ---
@@ -192,24 +199,125 @@ function main_menu() {
         read -r selection
 
         case $selection in
-            01|1) echo -e "${COL_CYAN}Opening MENU SSH VIP...${COL_NC}"; sleep 1 ;;
-            02|2) echo -e "${COL_CYAN}Opening MENU VMESS...${COL_NC}"; sleep 1 ;;
-            03|3) echo -e "${COL_CYAN}Opening MENU VLESS...${COL_NC}"; sleep 1 ;;
-            04|4) echo -e "${COL_CYAN}Opening MENU TROJAN...${COL_NC}"; sleep 1 ;;
-            05|5) echo -e "${COL_CYAN}Opening MENU SHADOW...${COL_NC}"; sleep 1 ;;
-            06|6) echo -e "${COL_CYAN}Opening MENU TRIAL...${COL_NC}"; sleep 1 ;;
+            01|1)
+                clear
+                echo -e "${COL_CYAN}SSH & OpenVPN Menu${COL_NC}"
+                echo -e "[1] Create Account"
+                echo -e "[2] Generate Trial"
+                echo -e "[3] Renew Account"
+                echo -e "[4] Delete Account"
+                read -p "Select: " opt
+                case $opt in
+                    1) ./ssh-vpn.sh usernew ;;
+                    2) ./ssh-vpn.sh trial ;;
+                    3) ./ssh-vpn.sh renew ;;
+                    4) ./ssh-vpn.sh deluser ;;
+                esac
+                read -p "Press Enter..."
+                ;;
+            02|2)
+                clear
+                echo -e "${COL_CYAN}Xray VMess Menu${COL_NC}"
+                echo -e "[1] Create Account"
+                echo -e "[2] Generate Trial"
+                echo -e "[3] Renew Account"
+                echo -e "[4] Delete Account"
+                read -p "Select: " opt
+                case $opt in
+                    1) ./xray-vmess.sh add ;;
+                    2) ./xray-vmess.sh trial ;;
+                    3) ./xray-vmess.sh renew ;;
+                    4) ./xray-vmess.sh del ;;
+                esac
+                read -p "Press Enter..."
+                ;;
+            03|3)
+                clear
+                echo -e "${COL_CYAN}Xray VLess Menu${COL_NC}"
+                echo -e "[1] Create Account"
+                echo -e "[2] Generate Trial"
+                echo -e "[3] Renew Account"
+                echo -e "[4] Delete Account"
+                read -p "Select: " opt
+                case $opt in
+                    1) ./xray-vless.sh add ;;
+                    2) ./xray-vless.sh trial ;;
+                    3) ./xray-vless.sh renew ;;
+                    4) ./xray-vless.sh del ;;
+                esac
+                read -p "Press Enter..."
+                ;;
+            04|4)
+                clear
+                echo -e "${COL_CYAN}Xray Trojan Menu${COL_NC}"
+                echo -e "[1] Create Account"
+                echo -e "[2] Generate Trial"
+                echo -e "[3] Renew Account"
+                echo -e "[4] Delete Account"
+                read -p "Select: " opt
+                case $opt in
+                    1) ./xray-trojan.sh add ;;
+                    2) ./xray-trojan.sh trial ;;
+                    3) ./xray-trojan.sh renew ;;
+                    4) ./xray-trojan.sh del ;;
+                esac
+                read -p "Press Enter..."
+                ;;
+            05|5) ./xray-shadow.sh add; read -p "Press Enter..." ;;
+            06|6)
+                 # Global Trial Menu
+                 clear
+                 echo -e "Global Trial Menu"
+                 echo -e "[1] SSH Trial"
+                 echo -e "[2] VMess Trial"
+                 echo -e "[3] VLess Trial"
+                 echo -e "[4] Trojan Trial"
+                 read -p "Select: " opt
+                 case $opt in
+                    1) ./ssh-vpn.sh trial ;;
+                    2) ./xray-vmess.sh trial ;;
+                    3) ./xray-vless.sh trial ;;
+                    4) ./xray-trojan.sh trial ;;
+                 esac
+                 read -p "Press Enter..."
+                 ;;
             07|7) echo -e "${COL_CYAN}Checking RAM/CPU...${COL_NC}"; echo "RAM: $RAM_USAGE / $RAM_TOTAL"; echo "CPU: $CPU_LOAD"; read -p "Press Enter..." ;;
-            08|8) echo -e "${COL_RED}Deleting Expired Accounts...${COL_NC}"; sleep 1 ;;
-            25)   echo -e "${COL_CYAN}Changing SSH Banner...${COL_NC}"; sleep 1 ;;
-            09|9) echo -e "${COL_RED}Rebooting...${COL_NC}"; sleep 1 ;;
+            08|8)
+                echo -e "${COL_RED}Checking Expired Accounts (Requires Cron)...${COL_NC}"
+                sleep 2
+                ;;
+            25)   nano /etc/issue.net ;;
+            09|9)
+                echo -e "${COL_CYAN}Auto Reboot Setup (Mock)${COL_NC}"
+                sleep 2
+                ;;
             10)   echo -e "${COL_CYAN}Menu Port...${COL_NC}"; sleep 1 ;;
-            11)   echo -e "${COL_CYAN}Running Speedtest...${COL_NC}"; sleep 1 ;;
+            11)
+                if command -v speedtest-cli &> /dev/null; then
+                    speedtest-cli
+                else
+                    echo "Speedtest-cli not found. Please install it."
+                fi
+                read -p "Press Enter..."
+                ;;
             12)   echo -e "${COL_CYAN}Running Check...${COL_NC}"; sleep 1 ;;
-            13)   echo -e "${COL_CYAN}Clearing Log...${COL_NC}"; sleep 1 ;;
+            13)
+                echo "Clearing Logs..."
+                echo > /var/log/syslog
+                echo > /var/log/auth.log
+                echo > /var/log/xray/access.log
+                echo "Logs cleared."
+                sleep 1
+                ;;
             14)   echo -e "${COL_CYAN}Create Slow...${COL_NC}"; sleep 1 ;;
             15)   echo -e "${COL_CYAN}Backup/Restore...${COL_NC}"; sleep 1 ;;
-            16)   echo -e "${COL_RED}Rebooting VPS...${COL_NC}"; sleep 1 ;;
-            17)   echo -e "${COL_RED}Restarting VPS Services...${COL_NC}"; sleep 1 ;;
+            16)   reboot ;;
+            17)
+                echo "Restarting Services..."
+                systemctl restart ssh xray nginx dropbear 2>/dev/null
+                echo "Done."
+                sleep 1
+                ;;
             18)   echo -e "${COL_CYAN}Set Domain...${COL_NC}"; sleep 1 ;;
             19)   echo -e "${COL_CYAN}Cert SSL...${COL_NC}"; sleep 1 ;;
             20)   echo -e "${COL_CYAN}Install UDP...${COL_NC}"; sleep 1 ;;
