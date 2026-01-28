@@ -208,10 +208,10 @@ function main_menu() {
                 echo -e "[4] Delete Account"
                 read -p "Select: " opt
                 case $opt in
-                    1) ./ssh-vpn.sh usernew ;;
-                    2) ./ssh-vpn.sh trial ;;
-                    3) ./ssh-vpn.sh renew ;;
-                    4) ./ssh-vpn.sh deluser ;;
+                    1) ssh-vpn.sh usernew ;;
+                    2) ssh-vpn.sh trial ;;
+                    3) ssh-vpn.sh renew ;;
+                    4) ssh-vpn.sh deluser ;;
                 esac
                 read -p "Press Enter..."
                 ;;
@@ -224,10 +224,10 @@ function main_menu() {
                 echo -e "[4] Delete Account"
                 read -p "Select: " opt
                 case $opt in
-                    1) ./xray-vmess.sh add ;;
-                    2) ./xray-vmess.sh trial ;;
-                    3) ./xray-vmess.sh renew ;;
-                    4) ./xray-vmess.sh del ;;
+                    1) xray-vmess.sh add ;;
+                    2) xray-vmess.sh trial ;;
+                    3) xray-vmess.sh renew ;;
+                    4) xray-vmess.sh del ;;
                 esac
                 read -p "Press Enter..."
                 ;;
@@ -240,10 +240,10 @@ function main_menu() {
                 echo -e "[4] Delete Account"
                 read -p "Select: " opt
                 case $opt in
-                    1) ./xray-vless.sh add ;;
-                    2) ./xray-vless.sh trial ;;
-                    3) ./xray-vless.sh renew ;;
-                    4) ./xray-vless.sh del ;;
+                    1) xray-vless.sh add ;;
+                    2) xray-vless.sh trial ;;
+                    3) xray-vless.sh renew ;;
+                    4) xray-vless.sh del ;;
                 esac
                 read -p "Press Enter..."
                 ;;
@@ -256,14 +256,14 @@ function main_menu() {
                 echo -e "[4] Delete Account"
                 read -p "Select: " opt
                 case $opt in
-                    1) ./xray-trojan.sh add ;;
-                    2) ./xray-trojan.sh trial ;;
-                    3) ./xray-trojan.sh renew ;;
-                    4) ./xray-trojan.sh del ;;
+                    1) xray-trojan.sh add ;;
+                    2) xray-trojan.sh trial ;;
+                    3) xray-trojan.sh renew ;;
+                    4) xray-trojan.sh del ;;
                 esac
                 read -p "Press Enter..."
                 ;;
-            05|5) ./xray-shadow.sh add; read -p "Press Enter..." ;;
+            05|5) xray-shadow.sh add; read -p "Press Enter..." ;;
             06|6)
                  # Global Trial Menu
                  clear
@@ -274,21 +274,25 @@ function main_menu() {
                  echo -e "[4] Trojan Trial"
                  read -p "Select: " opt
                  case $opt in
-                    1) ./ssh-vpn.sh trial ;;
-                    2) ./xray-vmess.sh trial ;;
-                    3) ./xray-vless.sh trial ;;
-                    4) ./xray-trojan.sh trial ;;
+                    1) ssh-vpn.sh trial ;;
+                    2) xray-vmess.sh trial ;;
+                    3) xray-vless.sh trial ;;
+                    4) xray-trojan.sh trial ;;
                  esac
                  read -p "Press Enter..."
                  ;;
             07|7) echo -e "${COL_CYAN}Checking RAM/CPU...${COL_NC}"; echo "RAM: $RAM_USAGE / $RAM_TOTAL"; echo "CPU: $CPU_LOAD"; read -p "Press Enter..." ;;
             08|8)
-                echo -e "${COL_RED}Checking Expired Accounts (Requires Cron)...${COL_NC}"
+                echo -e "${COL_RED}Deleting Expired Accounts...${COL_NC}"
+                xp
                 sleep 2
                 ;;
             25)   nano /etc/issue.net ;;
             09|9)
-                echo -e "${COL_CYAN}Auto Reboot Setup (Mock)${COL_NC}"
+                echo -e "${COL_CYAN}Setting Auto Reboot to 05:00...${COL_NC}"
+                echo "0 5 * * * root reboot" > /etc/cron.d/auto_reboot
+                service cron restart 2>/dev/null || systemctl restart cron
+                echo "Done."
                 sleep 2
                 ;;
             10)   echo -e "${COL_CYAN}Menu Port...${COL_NC}"; sleep 1 ;;
